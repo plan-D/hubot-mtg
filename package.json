@@ -23,6 +23,7 @@
     "node": "0.10.x"
   },
   "devDependencies": {
+    "forever": "^0.15.1",
     "request": "^2.69.0"
   }
 }
