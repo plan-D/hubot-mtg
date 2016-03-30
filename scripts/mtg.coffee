@@ -17,12 +17,20 @@
 
 querystring = require 'querystring'
 request = require 'request'
+{Iconv} = require 'iconv'
+{buffer} = require 'buffer'
 
 # get card image url from gatherer
 getCardImage = (cardname) ->
   imageUrl = "http://gatherer.wizards.com/Handlers/Image.ashx"
   query = { type: "card", name: cardname }
   "#{imageUrl}?#{querystring.stringify(query)}#.jpg"
+
+# sjis to utf8 for wisdomguild
+toUtf8 = (body) ->
+  iconv = new Iconv('SHIFT_JIS', 'UTF-8//TRANSLIT//IGNORE')
+  body = new Buffer(body, 'binary')
+  body = iconv.convert(body).toString()
 
 module.exports = (robot) ->
   # cast
@@ -42,6 +50,31 @@ module.exports = (robot) ->
       }
 
     request options, (error, response, body) ->
-      card = body.match(re)
-      msg.send "#{card[1]}"
-      msg.send getCardImage(card[1])
+      if (!error && response.statusCode == 200)
+        card = body.match(re)
+        msg.send "#{card[1]}"
+        msg.send getCardImage(card[1])
+      else
+        msg.send "fizzled!"
+
+  # pick
+  robot.respond /pick (.*)/i, (msg) ->
+    searchUrl = "http://whisper.wisdom-guild.net/search.php"
+    cardFormat = msg.match[1] || "standard"
+    query = { format: cardFormat, output: "text" }
+    jpre = /日本語名：([^（]*)（/g
+    options = 
+      url: "#{searchUrl}?#{querystring.stringify(query)}"
+      timeout: 30000
+      encoding: null
+ 
+    request options, (error, response, body) ->
+      if (!error && response.statusCode == 200)
+        cards = toUtf8(body).match(jpre)
+        picker = Math.floor(Math.random()*cards.length)
+        picked = cards[picker]
+        targetName = picked.substring(picked.indexOf('：')+1,picked.length-1)
+        msg.send "#{targetName}"
+        msg.send getCardImage(targetName)
+      else
+        msg.send "fizzled!"
