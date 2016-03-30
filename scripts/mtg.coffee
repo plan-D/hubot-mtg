@@ -8,9 +8,11 @@
 # Commands:
 #   hubot cast <card name> - get a specified card image from gatherer
 #   hubot draw - get a random card image from gatherer
-#
+#   hubot pick <format> - get a random card in specified format
 # Notes:
-#   <optional notes required for the script>
+#   this script requires some npm modules below
+#    * request
+#    * iconv
 #
 # Author:
 #   plan-D
@@ -59,6 +61,7 @@ module.exports = (robot) ->
 
   # pick
   robot.respond /pick (.*)/i, (msg) ->
+    msg.send "Now searching please do not request rapidly."
     searchUrl = "http://whisper.wisdom-guild.net/search.php"
     cardFormat = msg.match[1] || "standard"
     query = { format: cardFormat, output: "text" }
