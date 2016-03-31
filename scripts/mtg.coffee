@@ -8,11 +8,9 @@
 # Commands:
 #   hubot cast <card name> - get a specified card image from gatherer
 #   hubot draw - get a random card image from gatherer
-#   hubot pick <format> - get a random card in specified format
+#
 # Notes:
-#   this script requires some npm modules below
-#    * request
-#    * iconv
+#   <optional notes required for the script>
 #
 # Author:
 #   plan-D
@@ -33,6 +31,21 @@ toUtf8 = (body) ->
   iconv = new Iconv('SHIFT_JIS', 'UTF-8//TRANSLIT//IGNORE')
   body = new Buffer(body, 'binary')
   body = iconv.convert(body).toString()
+
+# search from wisdomguild
+wisdomguild = (query) ->
+  options = 
+    url: "http://whisper.wisodm-guild.net/search.php?#{querystring.stringify(query)}"
+    timeout: 30000
+    encoding: null
+  return options 
+
+# search from gatherer
+gatherer = (query) ->
+  options = 
+    url: ""
+    timeout: 30000
+  return options
 
 module.exports = (robot) ->
   # cast
@@ -62,16 +75,11 @@ module.exports = (robot) ->
   # pick
   robot.respond /pick (.*)/i, (msg) ->
     msg.send "Now searching please do not request rapidly."
-    searchUrl = "http://whisper.wisdom-guild.net/search.php"
     cardFormat = msg.match[1] || "standard"
     query = { format: cardFormat, output: "text" }
     jpre = /日本語名：([^（]*)（/g
-    options = 
-      url: "#{searchUrl}?#{querystring.stringify(query)}"
-      timeout: 30000
-      encoding: null
  
-    request options, (error, response, body) ->
+    request wisdomguild(query), (error, response, body) ->
       if (!error && response.statusCode == 200)
         cards = toUtf8(body).match(jpre)
         picker = Math.floor(Math.random()*cards.length)
