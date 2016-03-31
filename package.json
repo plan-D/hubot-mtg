@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "forever": "^0.15.1",
+    "iconv": "^2.1.11",
     "request": "^2.69.0"
   }
 }
