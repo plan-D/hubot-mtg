@@ -8,9 +8,10 @@
 # Commands:
 #   hubot cast <card name> - get a specified card image from gatherer
 #   hubot draw - get a random card image from gatherer
+#   hubot pick <format> - get a random card image that is available at specified format.
 #
 # Notes:
-#   <optional notes required for the script>
+#   
 #
 # Author:
 #   plan-D
@@ -43,8 +44,13 @@ wisdomguild = (query) ->
 # search from gatherer
 gatherer = (query) ->
   options = 
-    url: ""
-    timeout: 30000
+    url: "http://gatherer.wizards.com/Pages/Search/Default.aspx?#{querystring.stringify(query)}"
+    timeout: 60000
+    headers: {
+      'Accept-Language' : 'ja,en'
+      'Cookie' : 'CardDatabaseSettings=0=1&1=ja-JP&2=0&14=1&3=13&4=0&5=1&6=15&7=0&8=1&9=1&10=VisualSpoiler&11=7&12=8&15=1&16=1&13=;'
+      'Connection' : 'keep-alive'
+    }
   return options
 
 module.exports = (robot) ->
@@ -75,17 +81,23 @@ module.exports = (robot) ->
   # pick
   robot.respond /pick (.*)/i, (msg) ->
     msg.send "Now searching please do not request rapidly."
-    cardFormat = msg.match[1] || "standard"
-    query = { format: cardFormat, output: "text" }
-    jpre = /日本語名：([^（]*)（/g
- 
-    request wisdomguild(query), (error, response, body) ->
+
+    # 実際はpickの後に文字が必ず入るのでnullはあり得ない
+    cardFormat = msg.match[1] || "Standard"
+    query = { action: "advanced", output: "spoiler", method: "visual", format:"\+[\"#{cardFormat}\"]" }
+
+    # alt="JP_CARD_NAME(EN_CARD_NAME)"
+    jpre = /alt=\"([^\(>]*)\(/g
+
+    request gatherer(query), (error, response, body) ->
       if (!error && response.statusCode == 200)
-        cards = toUtf8(body).match(jpre)
+        # console.log("#{body}")
+        cards = body.match(jpre)
         picker = Math.floor(Math.random()*cards.length)
         picked = cards[picker]
-        targetName = picked.substring(picked.indexOf('：')+1,picked.length-1)
-        msg.send "#{targetName}"
+        targetName = picked.substring(picked.indexOf('"')+1,picked.length-1)
+        msg.send "I picked #{targetName}(#{cardFormat})"
         msg.send getCardImage(targetName)
+
       else
         msg.send "fizzled!"
