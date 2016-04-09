@@ -20,6 +20,20 @@ querystring = require 'querystring'
 request = require 'request'
 {Iconv} = require 'iconv'
 {buffer} = require 'buffer'
+fs = require 'fs'
+soi_list = fs.readFileSync './soi.list'
+soi_list = soi_list.toString().split("\n")
+ogw_list = fs.readFileSync './ogw.list'
+ogw_list = ogw_list.toString().split("\n")
+bfz_list = fs.readFileSync './bfz.list'
+bfz_list = bfz_list.toString().split("\n")
+ori_list = fs.readFileSync './ori.list'
+ori_list = ori_list.toString().split("\n")
+dtk_list = fs.readFileSync './dtk.list'
+dtk_list = dtk_list.toString().split("\n")
+
+standard_list = []
+standard_list = standard_list.concat(soi_list, ogw_list, bfz_list, ori_list, dtk_list)
 
 # get card image url from gatherer
 getCardImage = (cardname) ->
@@ -101,3 +115,27 @@ module.exports = (robot) ->
 
       else
         msg.send "fizzled!"
+
+  robot.respond /standard/i, (msg) ->
+    card = standard_list[Math.floor(Math.random() * standard_list.length)] || "_____"
+    msg.send getCardImage(card)
+
+  robot.respond /soi/i, (msg) ->
+    card = soi_list[Math.floor(Math.random() * soi_list.length)] || "_____"
+    msg.send getCardImage(card)
+
+  robot.respond /ogw/i, (msg) ->
+    card = ogw_list[Math.floor(Math.random() * ogw_list.length)] || "_____"
+    msg.send getCardImage(card)
+
+  robot.respond /bfz/i, (msg) ->
+    card = bfz_list[Math.floor(Math.random() * bfz_list.length)] || "_____"
+    msg.send getCardImage(card)
+
+  robot.respond /ori/i, (msg) ->
+    card = ori_list[Math.floor(Math.random() * ori_list.length)] || "_____"
+    msg.send getCardImage(card)
+
+  robot.respond /dtk/i, (msg) ->
+    card = dtk_list[Math.floor(Math.random() * dtk_list.length)] || "_____"
+    msg.send getCardImage(card)
