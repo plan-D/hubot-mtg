@@ -21,6 +21,18 @@ request = require 'request'
 {Iconv} = require 'iconv'
 {buffer} = require 'buffer'
 
+# card format array
+EXPS_STANDARD = ["SOI", "OGW", "BFZ", "ORI", "DTK"]
+EXPS_MODERN = ["SOI", "OGW", "BFZ", "ORI", "DTK", "FRF", "KTK", "M15", "JOU", "BNG",
+  "THS", "M14", "DGM", "GTC", "RTR", "M13", "AVR", "DKA", "ISD", "M12",
+  "NPH", "MBS", "SOM", "M11", "ROE", "WWK", "ZEN", "M10", "ARB", "CON",
+  "ALA", "EVE", "SHM", "MOR", "LRW", "10E", "CSP", "FUT", "PLC", "TSP",
+  "DIS", "GPT", "RAV", "9ED", "SOK", "BOK", "CHK", "5DN", "DST", "MRD",
+  "8ED"]
+
+# regexp to get cardname from cadlist text
+WHISPER_REGEXP = /日本語名：([^（]*)（/g
+
 # get card image url from gatherer
 getCardImage = (cardname) ->
   imageUrl = "http://gatherer.wizards.com/Handlers/Image.ashx"
@@ -33,8 +45,8 @@ toUtf8 = (body) ->
   body = new Buffer(body, 'binary')
   body = iconv.convert(body).toString()
 
-# search from wisdomguild
-wisdomguild = (query) ->
+# get cardlist text from whisper card database
+whisper = (query) ->
   options = 
     url: "http://whisper.wisdom-guild.net/cardlist/#{query}.txt"
     timeout: 10000
@@ -78,34 +90,38 @@ module.exports = (robot) ->
       else
         msg.send "fizzled!"
 
-  # pick
+  # pick(no args)
+  robot.respond /pick$/i, (msg) ->
+    cardFormat = EXPS_STANDARD[Math.floor(Math.random()*EXPS_STANDARD.length)]
+
+    request whisper(cardFormat), (error, response, body) ->
+      if (!error && response.statusCode == 200)
+        cards = toUtf8(body).match(WHISPER_REGEXP)
+        if cards
+          picker = Math.floor(Math.random()*cards.length)
+          picked = cards[picker]
+          targetName = picked.substring(5,picked.length-1)
+          msg.send "I picked #{targetName}(#{cardFormat})"
+          msg.send getCardImage(targetName)
+        else
+          msg.send "no #{cardFormat} cards in library."
+      else
+
+  # pick(args)
   robot.respond /pick (.*)/i, (msg) ->
-    EXPS_STANDARD = ["SOI", "OGW", "BFZ", "ORI", "DTK"]
-    EXPS_MODERN = ["SOI", "OGW", "BFZ", "ORI", "DTK", "FRF", "KTK", "M15", "JOU", "BNG",
-      "THS", "M14", "DGM", "GTC", "RTR", "M13", "AVR", "DKA", "ISD", "M12",
-      "NPH", "MBS", "SOM", "M11", "ROE", "WWK", "ZEN", "M10", "ARB", "CON",
-      "ALA", "EVE", "SHM", "MOR", "LRW", "10E", "CSP", "FUT", "PLC", "TSP",
-      "DIS", "GPT", "RAV", "9ED", "SOK", "BOK", "CHK", "5DN", "DST", "MRD",
-      "8ED"]
     cardFormat = "SOI"
 
-    # スタンダードやモダンを指定すると、対応するエキスパンションからランダムで一つ選択
+    # if the argument is format, choose random one from available expansions.
     if msg.match[1].toUpperCase() == "STANDARD"
       cardFormat = EXPS_STANDARD[Math.floor(Math.random()*EXPS_STANDARD.length)]
     else if msg.match[1].toUpperCase() == "MODERN"
       cardFormat = EXPS_MODERN[Math.floor(Math.random()*EXPS_MODERN.length)]
     else
       cardFormat = msg.match[1]
-
-    # console.log(cardFormat)
-
-    # alt="JP_CARD_NAME(EN_CARD_NAME)"
-    jpre = /日本語名：([^（]*)（/g
-
-    request wisdomguild(cardFormat), (error, response, body) ->
+    request whisper(cardFormat), (error, response, body) ->
       if (!error && response.statusCode == 200)
         # console.log("#{body}")
-        cards = toUtf8(body).match(jpre)
+        cards = toUtf8(body).match(WHISPER_REGEXP)
         if cards
           picker = Math.floor(Math.random()*cards.length)
           picked = cards[picker]
@@ -116,3 +132,7 @@ module.exports = (robot) ->
           msg.send "no #{cardFormat} cards in library."
       else
         msg.send "#{response.statusCode} fizzled!"
+
+  robot.respond /pickel/i, (msg) ->
+    msg.send "uh-huh, is this you want?"
+    msg.send getCardImage("重いつるはし")
