@@ -134,5 +134,5 @@ module.exports = (robot) ->
         msg.send "#{response.statusCode} fizzled!"
 
   robot.respond /pickel/i, (msg) ->
-    msg.send "uh-huh, is this you want?"
+    msg.send "huh, is this what you want?"
     msg.send getCardImage("重いつるはし")
