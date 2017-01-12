@@ -2,6 +2,8 @@
 #   In writing this script, I refered to djljr's M:tG hubot script.
 #   https://github.com/github/hubot-scripts/blob/master/src/scripts/mtg.coffee
 #
+#   I thank Whisper Card Database for the Japanese card data.
+#    
 # Configuration:
 #   LIST_OF_ENV_VARS_TO_SET
 #
