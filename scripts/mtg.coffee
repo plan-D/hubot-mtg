@@ -24,13 +24,13 @@ request = require 'request'
 {buffer} = require 'buffer'
 
 # card format array
-EXPS_STANDARD = ["AER", "KLD", "EMN", "SOI", "OGW", "BFZ"]
-EXPS_MODERN = ["AER", "KLD", "EMN", "SOI", "OGW", "BFZ", "ORI", "DTK", "FRF", "KTK", "M15", "JOU", "BNG",
-  "THS", "M14", "DGM", "GTC", "RTR", "M13", "AVR", "DKA", "ISD", "M12",
-  "NPH", "MBS", "SOM", "M11", "ROE", "WWK", "ZEN", "M10", "ARB", "CON",
-  "ALA", "EVE", "SHM", "MOR", "LRW", "10E", "CSP", "FUT", "PLC", "TSP",
-  "DIS", "GPT", "RAV", "9ED", "SOK", "BOK", "CHK", "5DN", "DST", "MRD",
-  "8ED"]
+EXPS_STANDARD = ["AKH","AER", "KLD", "EMN", "SOI", "OGW", "BFZ"]
+EXPS_MODERN = ["AKH","AER", "KLD", "EMN", "SOI",
+  "OGW", "BFZ", "ORI", "DTK", "FRF", "KTK", "M15", "JOU", "BNG", "THS",
+  "M14", "DGM", "GTC", "RTR", "M13", "AVR", "DKA", "ISD", "M12", "NPH",
+  "MBS", "SOM", "M11", "ROE", "WWK", "ZEN", "M10", "ARB", "CON", "ALA",
+  "EVE", "SHM", "MOR", "LRW", "10E", "CSP", "FUT", "PLC", "TSP", "DIS",
+  "GPT", "RAV", "9ED", "SOK", "BOK", "CHK", "5DN", "DST", "MRD", "8ED"]
 
 # regexp to get cardname from cadlist text
 WHISPER_REGEXP = /日本語名：([^（\n]*)[（\n]/g
@@ -50,7 +50,7 @@ toUtf8 = (body) ->
 # get cardlist text from whisper card database
 whisper = (query) ->
   options = 
-    url: "http://whisper.wisdom-guild.net/cardlist/#{query}.txt"
+    url: "http://whisper.wisdom-guild.net/#{query}"
     timeout: 10000
     encoding: null
   return options 
@@ -90,13 +90,14 @@ module.exports = (robot) ->
         msg.send "#{card[1]}"
         msg.send getCardImage(card[1])
       else
-        msg.send "fizzled!"
+        msg.send "#{response.statusCode} fizzled!"
 
   # pick(no args)
   robot.respond /pick$/i, (msg) ->
     cardFormat = EXPS_STANDARD[Math.floor(Math.random()*EXPS_STANDARD.length)]
+    cardQuery = "cardlist/#{cardFormat}.txt"
 
-    request whisper(cardFormat), (error, response, body) ->
+    request whisper(cardQuery), (error, response, body) ->
       if (!error && response.statusCode == 200)
         cards = toUtf8(body).match(WHISPER_REGEXP)
         if cards
@@ -108,19 +109,26 @@ module.exports = (robot) ->
         else
           msg.send "no #{cardFormat} cards in library."
       else
+        msg.send "#{response.statusCode} fizzled!"
 
   # pick(args)
   robot.respond /pick (.*)/i, (msg) ->
-    cardFormat = "AER"
-
+    cardFormat = "AKH"
+    cardQuery = "cardlist/#{cardFormat}.txt"
     # if the argument is format, choose random one from available expansions.
     if msg.match[1].toUpperCase() == "STANDARD"
       cardFormat = EXPS_STANDARD[Math.floor(Math.random()*EXPS_STANDARD.length)]
+      cardQuery = "cardlist/#{cardFormat}.txt"
     else if msg.match[1].toUpperCase() == "MODERN"
       cardFormat = EXPS_MODERN[Math.floor(Math.random()*EXPS_MODERN.length)]
+      cardQuery = "cardlist/#{cardFormat}.txt"
+    else if msg.match[1].toUpperCase() == "COMMANDER"
+      cardFormat = "COMMANDER"
+      cardQuery = "search.php?&mcost_op=able&mcost_x=may&color_multi=able&color_ope=and&display=cardname&supertype[]=legendary&supertype_ope=or&cardtype[]=creature&cardtype_ope=or&subtype_ope=or&format=all&exclude=no&set_ope=or&sort=name_en&sort_op=&output=text"
     else
       cardFormat = msg.match[1]
-    request whisper(cardFormat), (error, response, body) ->
+      cardQuery = "cardlist/#{cardFormat}.txt"
+    request whisper(cardQuery), (error, response, body) ->
       if (!error && response.statusCode == 200)
         # console.log("#{body}")
         cards = toUtf8(body).match(WHISPER_REGEXP)
