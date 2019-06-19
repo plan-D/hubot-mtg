@@ -24,8 +24,8 @@ request = require 'request'
 {buffer} = require 'buffer'
 
 # card format array
-EXPS_STANDARD = ["RNA", "GRN", "M19", "DOM", "RIX", "XLN", "HOU", "AKH"]
-EXPS_MODERN = ["RNA", "GRN",
+EXPS_STANDARD = ["WAR", "RNA", "GRN", "M19", "DOM", "RIX", "XLN", "HOU", "AKH"]
+EXPS_MODERN = ["WAR", "RNA", "GRN",
   "M19", "DOM", "RIX", "XLN", "HOU", "AKH", "AER", "KLD", "EMN", "SOI",
   "OGW", "BFZ", "ORI", "DTK", "FRF", "KTK", "M15", "JOU", "BNG", "THS",
   "M14", "DGM", "GTC", "RTR", "M13", "AVR", "DKA", "ISD", "M12", "NPH",
