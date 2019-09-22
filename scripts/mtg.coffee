@@ -25,7 +25,7 @@ request = require 'request'
 
 # card format array
 EXPS_STANDARD = ["ELD", "M20", "WAR", "RNA", "GRN", "M19", "DOM", "RIX", "XLN"]
-EXPS_MODERN = ["WAR", "RNA", "GRN",
+EXPS_MODERN = ["ELD", "M20", "WAR", "RNA", "GRN",
   "M19", "DOM", "RIX", "XLN", "HOU", "AKH", "AER", "KLD", "EMN", "SOI",
   "OGW", "BFZ", "ORI", "DTK", "FRF", "KTK", "M15", "JOU", "BNG", "THS",
   "M14", "DGM", "GTC", "RTR", "M13", "AVR", "DKA", "ISD", "M12", "NPH",
