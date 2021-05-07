@@ -24,8 +24,13 @@ request = require 'request'
 {buffer} = require 'buffer'
 
 # card format array
-EXPS_STANDARD = ["ELD", "M20", "WAR", "RNA", "GRN", "M19", "DOM", "RIX", "XLN"]
-EXPS_MODERN = ["ELD", "M20", "WAR", "RNA", "GRN",
+EXPS_STANDARD = ["STX", "KHM", "ZNR", "M21", "IKO", "THB", "ELD"]
+EXPS_PIONEER = ["STX", "KHM", "ZNR", "M21", "IKO", 
+  "THB", "ELD", "M20", "WAR", "RNA", "GRN", "M19", "DOM", "RIX", "XLN",
+  "HOU", "AKH", "AER", "KLD", "EMN", "SOI", "OGW", "BFZ", "ORI", "DTK", 
+  "FRF", "KTK", "M15", "JOU", "BNG", "THS", "M14", "DGM", "GTC", "RTR"]
+EXPS_MODERN = ["STX",
+  "KHM", "ZNR", "M21", "IKO", "THB", "ELD", "M20", "WAR", "RNA", "GRN",
   "M19", "DOM", "RIX", "XLN", "HOU", "AKH", "AER", "KLD", "EMN", "SOI",
   "OGW", "BFZ", "ORI", "DTK", "FRF", "KTK", "M15", "JOU", "BNG", "THS",
   "M14", "DGM", "GTC", "RTR", "M13", "AVR", "DKA", "ISD", "M12", "NPH",
@@ -119,6 +124,9 @@ module.exports = (robot) ->
     # if the argument is format, choose random one from available expansions.
     if msg.match[1].toUpperCase() == "STANDARD"
       cardFormat = EXPS_STANDARD[Math.floor(Math.random()*EXPS_STANDARD.length)]
+      cardQuery = "cardlist/#{cardFormat}.txt"
+    else if msg.match[1].toUpperCase() == "PIONEER"
+      cardFormat = EXPS_PIONEER[Math.floor(Math.random()*EXPS_PIONEER.length)]
       cardQuery = "cardlist/#{cardFormat}.txt"
     else if msg.match[1].toUpperCase() == "MODERN"
       cardFormat = EXPS_MODERN[Math.floor(Math.random()*EXPS_MODERN.length)]
